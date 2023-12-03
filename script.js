@@ -3,12 +3,13 @@ let isEnd = false
 let startRow = 2
 const accountList = []
 const sendEmailObj = {}
+
 /**
  * 发送邮件
  * @param {string} to 发送邮箱
  * @param {string} text 发送内容
  */
-function sendEmail (to, text) {
+function sendEmail(to, text) {
   const data_time = new Date().toLocaleDateString()
   // 配置发送邮箱
   const mailer = SMTP.login({
@@ -45,7 +46,7 @@ const sendMailHealper = {
 
 
 
-function sleep (d) {
+function sleep(d) {
   for (var t = Date.now(); Date.now() - t <= d;);
 }
 
@@ -54,7 +55,7 @@ function sleep (d) {
  * @param {number} number 
  * @returns { { refreshToken:string,isReward:boolean,isNotify:boolean,email:string,number:number } }
  */
-function getRow (number) {
+function getRow(number) {
   const refreshToken = Application.Range("A" + number).Text
   const isReward = Application.Range("B" + number).Text === '是' ? true : false
   const isNotify = Application.Range("C" + number).Text === '是' ? true : false
@@ -67,7 +68,7 @@ function getRow (number) {
  * @param {string} token 
  * @returns { { accessToken:string | '',phone: string } }
  */
-function getAccessToken (token) {
+function getAccessToken(token) {
   // 发起网络请求-获取token
   const data = HTTP.post("https://auth.aliyundrive.com/v2/account/token",
     JSON.stringify({
@@ -77,7 +78,8 @@ function getAccessToken (token) {
   ).json()
   const accessToken = data['access_token'] || ''
   const phone = data["user_name"] || ''
-  return { accessToken, phone }
+  const refresh_token = data["refresh_token"] || '已过期'
+  return { accessToken, phone, refresh_token }
 }
 
 
@@ -88,7 +90,7 @@ function getAccessToken (token) {
  * @throws { {row:number} }
  * @returns { userName:string,signInCount:number,row:number }
  *  */
-function signIn (accessToken, row) {
+function signIn(accessToken, row) {
   try {
     const data = HTTP.post("https://member.aliyundrive.com/v1/activity/sign_in_list",
       JSON.stringify({ "_rx-s": "mobile" }),
@@ -112,7 +114,7 @@ function signIn (accessToken, row) {
   }
 }
 
-function signInReward (accessToken, signInCount) {
+function signInReward(accessToken, signInCount) {
   try {
     const data = HTTP.post(
       "https://member.aliyundrive.com/v1/activity/sign_in_reward?_rx-s=mobile",
@@ -133,16 +135,43 @@ function signInReward (accessToken, signInCount) {
     }
   }
 }
+/**
+ * 获取本日签到奖励
+ */
+function signInInfo(accessToken) {
+  try {
+    const data = HTTP.post(
+      "https://member.aliyundrive.com/v2/activity/sign_in_info",
+      JSON.stringify({}),
+      { headers: { "Authorization": "Bearer " + accessToken } }
+    )
+    const dataJson = data.json()
+    const rewards = dataJson["result"]["rewards"]
+
+    return {
+      rewards,
+      success: true,
+    }
+  } catch {
+    return {
+      rewards: [],
+      success: false,
+    }
+  }
+}
 
 
 
-function main () {
+function main() {
   console.log(`共${accountList.length}个账号`)
 
   accountList.forEach((account, index) => {
-    const { token, isReward, isNotify, email } = account
+    const { token, isReward, isNotify, email, row } = account
     console.log(`开始签到第${index + 2}行账号`)
-    const { accessToken, phone } = getAccessToken(token)
+    const { accessToken, phone, refresh_token } = getAccessToken(token)
+
+    Application.Range('A' + row).Value = refresh_token
+
     if (!accessToken) {
       console.log(`第${index + 2}行账号token错误`)
       sendMailHealper.add(email, `第${index + 2}行账号token错误`)
@@ -178,6 +207,16 @@ function main () {
         sendMailHealper.add(email, `账号：${userName}-签到成功, 本月累计签到${signInCount}天\n本次签到获得${name},${description}`)
       }
     }
+    const signInInfoResult = signInInfo(accessToken)
+    if (signInInfoResult.rewards.length) {
+      console.log(`本月签到奖励`)
+      signInInfoResult.rewards.forEach((item) => {
+        console.log(`${item.name},${item.description}`)
+        if (isNotify) {
+          sendMailHealper.add(email, `今日签到奖励：${item.name}=>${item.remind} | ${item.type}`)
+        }
+      })
+    }
   })
   sendMailHealper.send()
 }
@@ -189,7 +228,7 @@ while (!isEnd) {
     isEnd = true
     break
   }
-  accountList.push({ token, isReward, isNotify, email })
+  accountList.push({ token, isReward, isNotify, email, row: startRow })
   startRow++
 }
 console.log(`获取到${accountList.length}个账号`)

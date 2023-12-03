@@ -13,8 +13,6 @@
 - 自动获取: 登录[阿里云盘](https://www.aliyundrive.com/drive/)后，控制台粘贴
 ```javascript
 copy(JSON.parse(localStorage.token).refresh_token); console.log(JSON.parse(localStorage.token).refresh_token);
-
-
 ```
 ![img](https://file2.antmoe.com/image/2/2023/09/02/64f31a55e0a16.png)
 
