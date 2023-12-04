@@ -48,3 +48,7 @@ copy(JSON.parse(localStorage.token).refresh_token); console.log(JSON.parse(local
 ![20230902194357T2PhPeOI000319](https://file2.antmoe.com/image/2/2023/09/02/64f320216dc45.png)
 
 最后根据自己的喜好，添加一个定时任务即可。
+
+## 其他说明
+
+- 领取任务奖励暂时只是领取，并不能完成任务。

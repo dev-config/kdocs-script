@@ -15,14 +15,14 @@ function sendEmail(to, text) {
   const mailer = SMTP.login({
     host: "smtp.qiye.aliyun.com", // 邮箱 的SMTP服务器的域名
     port: 465,
-    username: "", // 邮箱地址
-    password: "", // 邮箱的SMTP密码，非密码
+    username: "admin@antmoe.com", // 邮箱地址
+    password: "8EwhAgLdyTrYQqit", // 邮箱的SMTP密码，非密码
     secure: true
   });
   mailer.send({
     text, // 文本
     to, // 收件人
-    from: "阿里云盘签到", // 发件人
+    from: "阿里云盘签到<admin@antmoe.com>", // 发件人
     subject: "阿里云盘签到通知-" + data_time, // 主题
   })
 }
@@ -159,7 +159,30 @@ function signInInfo(accessToken) {
     }
   }
 }
-
+/**
+ * 获取本日任务奖励
+ */
+function signInTaskReward(accessToken, signInCount) {
+  try {
+    const data = HTTP.post(
+      "https://member.aliyundrive.com/v2/activity/sign_in_task_reward",
+      JSON.stringify({ "signInDay": signInCount }),
+      { headers: { "Authorization": "Bearer " + accessToken } }
+    )
+    const dataJson = data.json()
+    const name = dataJson["result"]["name"]
+    const description = dataJson["result"]["description"]
+    return {
+      name,
+      description,
+      success: true,
+    }
+  } catch {
+    return {
+      success: false,
+    }
+  }
+}
 
 
 function main() {
@@ -206,6 +229,14 @@ function main() {
       if (isNotify) {
         sendMailHealper.add(email, `账号：${userName}-签到成功, 本月累计签到${signInCount}天\n本次签到获得${name},${description}`)
       }
+    }
+    const signInTaskRewardResult = signInTaskReward(accessToken, signResult.signInCount)
+    if (!signInTaskRewardResult.success) {
+      console.log(`第${index + 2}行账号领取任务奖励失败`)
+      sendMailHealper.add(email, `第${index + 2}行账号领取任务奖励失败`)
+    } else {
+      console.log(`第${index + 2}行账号领取任务奖励成功`)
+      sendMailHealper.add(email, `第${index + 2}行账号领取任务奖励成功`)
     }
     const signInInfoResult = signInInfo(accessToken)
     if (signInInfoResult.rewards.length) {
