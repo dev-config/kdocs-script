@@ -49,10 +49,9 @@ jobs:
           npm run build
 
       - name: pages
-        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        uses: JamesIves/github-pages-deploy-action
         with:
-          branch: gh-pages
-          folder: ./dist
+          folder: dist
 
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
