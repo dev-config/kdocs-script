@@ -27,6 +27,8 @@ copy(JSON.parse(localStorage.token).refresh_token); console.log(JSON.parse(local
 
 ![202309021933578RmJTzGr000312](https://file2.antmoe.com/image/2/2023/09/02/64f31ddcc8270.png)
 
+模板参考链接：https://pub.kdocs.cn/t/t10CLEo3Y8fY0wy
+
 ### 第三步：复制代码
 
 复制本仓库构建好的签到[代码](https://github.com/dev-config/script-alidriver-dailyCheck/blob/gh-pages/alidriver.mjs)并粘贴到对应位置（有能力的小伙伴可以自行 clone 仓库代码在本地进行自己构建）
