@@ -52,10 +52,19 @@ function Http(accessToken) {
   function post(url, data) {
     return HTTP.post(url, data, { headers: { Authorization: `Bearer ${_accessToken}` } });
   }
+  function fetch(url, data) {
+    return HTTP.fetch(url, {
+      ...data,
+      headers: {
+        ...data.headers,
+        Authorization: `Bearer ${_accessToken}`
+      }
+    });
+  }
   function updateAccessToken(token) {
     _accessToken = token;
   }
-  return { post, updateAccessToken };
+  return { post, fetch, updateAccessToken };
 }
 
 const config = Config();
@@ -92,14 +101,18 @@ function signInListApi() {
   const result = http.post("https://member.aliyundrive.com/v1/activity/sign_in_list", JSON.stringify(body)).json();
   return result;
 }
-function updateDeviceExtras() {
+function updateDeviceExtras(deviceId) {
   const body = {
-    albumBackupLeftFileTotal: 0,
-    autoBackupStatus: true,
-    albumBackupLeftFileTotalSize: 0,
-    albumAccessAuthority: true
+    autoBackupStatus: true
   };
-  const result = http.post("https://api.alipan.com/users/v1/users/update_device_extras", JSON.stringify(body)).json();
+  const result = http.fetch("https://api.alipan.com/users/v1/users/update_device_extras", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "x-device-id": deviceId,
+      "Content-Type": "application/json;charset=UTF-8"
+    }
+  }).json();
   return result;
 }
 function signInInfoApi() {
@@ -131,7 +144,7 @@ function signInTaskRewardApi(signInDay) {
   accountList.forEach((account, index) => {
     const { refreshToken, email, isReward, isNotify, startRow: startRow2 } = account;
     console.log(`开始签到第${index + 2}行账号`);
-    const { access_token, refresh_token, user_name } = getAccessTokenApi(refreshToken);
+    const { access_token, refresh_token, user_name, device_id } = getAccessTokenApi(refreshToken);
     Application.Range(`A${startRow2}`).Value = refresh_token;
     if (!access_token) {
       console.log(`第${index + 2}行账号token错误`);
@@ -153,7 +166,8 @@ function signInTaskRewardApi(signInDay) {
     }
     if (!isReward)
       return;
-    updateDeviceExtras();
+    const updateDeviceExtrasResult = updateDeviceExtras(device_id);
+    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)}`);
     const signInInfoResult = signInInfoApi();
     const signInRewardResult = signInRewardApi(signInInfoResult.result.signInDay);
     const signInTaskRewardResult = signInTaskRewardApi(signInInfoResult.result.signInDay);
