@@ -25,7 +25,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^20.10.4",
-    "bumpp": "^9.2.0",
+    "bumpp": "^9.2.1",
     "dotenv": "^16.3.1",
     "eslint": "^8.55.0",
     "esno": "^4.0.0",

@@ -9,10 +9,20 @@ function Http(accessToken: string) {
   function post<T = any>(url: string, data: Record<string, any> | any) {
     return HTTP.post<T>(url, data, { headers: { Authorization: `Bearer ${_accessToken}` } })
   }
+  function fetch<T = any>(url: string, data: FetchRequestOption) {
+    return HTTP.fetch<T>(url, {
+      ...data,
+      headers: {
+        ...data.headers,
+        Authorization: `Bearer ${_accessToken}`,
+      },
+    })
+  }
+
   function updateAccessToken(token: string) {
     _accessToken = token
   }
 
-  return { post, updateAccessToken }
+  return { post, fetch, updateAccessToken }
 }
 export { Http }

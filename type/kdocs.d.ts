@@ -32,10 +32,18 @@ interface HTTPResponse<T> {
   // eslint-disable-next-line node/prefer-global/buffer
   binary: () => Buffer
 }
+interface FetchRequestOption {
+  method: 'GET' | 'POST'
+  headers?: Record<string, string>
+  body?: string
+  timeout?: number
+}
 
 declare const HTTP: {
   get<T>(url: string, options?: HTTPOptions): HTTPResponse<T>
   post<T>(url: string, body: any, options?: HTTPOptions): HTTPResponse<T>
+  fetch<T>(url: string, options?: FetchRequestOption): HTTPResponse<T>
+
 }
 interface Enum {
 

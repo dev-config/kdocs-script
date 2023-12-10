@@ -1,3 +1,4 @@
+import { sleep } from '../../utils'
 import { Config } from '../../utils/config'
 import { Email } from '../../utils/mail'
 import { Http } from '../../utils/request'
@@ -48,14 +49,19 @@ function signInListApi() {
   return result
 }
 // 更新设备信息
-function updateDeviceExtras() {
+function updateDeviceExtras(deviceId: string) {
   const body = {
-    albumBackupLeftFileTotal: 0,
     autoBackupStatus: true,
-    albumBackupLeftFileTotalSize: 0,
-    albumAccessAuthority: true,
   }
-  const result = http.post<{ 'result': boolean, 'success': boolean, 'code': null, 'message'?: string }>('https://api.alipan.com/users/v1/users/update_device_extras', JSON.stringify(body)).json()
+  const result = http.fetch<{ 'result': boolean, 'success': boolean, 'code': null, 'message'?: string }>('https://api.alipan.com/users/v1/users/update_device_extras', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'x-device-id': deviceId,
+      'Content-Type': 'application/json;charset=UTF-8',
+    },
+
+  }).json()
   return result
 }
 // 获取今日签到奖励
@@ -92,7 +98,7 @@ function signInTaskRewardApi(signInDay: number) {
   accountList.forEach((account, index) => {
     const { refreshToken, email, isReward, isNotify, startRow } = account
     console.log(`开始签到第${index + 2}行账号`)
-    const { access_token, refresh_token, user_name } = getAccessTokenApi(refreshToken)
+    const { access_token, refresh_token, user_name, device_id } = getAccessTokenApi(refreshToken)
     Application.Range(`A${startRow}`).Value = refresh_token
     if (!access_token) {
       console.log(`第${index + 2}行账号token错误`)
@@ -112,7 +118,10 @@ function signInTaskRewardApi(signInDay: number) {
       return
 
     // 更新设备信息
-    updateDeviceExtras()
+    const updateDeviceExtrasResult = updateDeviceExtras(device_id)
+    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)}`)
+    sleep(2000)
+
     // 获取今日签到奖励
     const signInInfoResult = signInInfoApi()
     // 领取签到奖励
