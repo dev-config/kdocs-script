@@ -17,5 +17,6 @@ export function Config() {
     MAIL_USERNAME,
     MAIL_PASSWORD,
     MAIL_SECURE,
+    DEFAULT_DEVICE_ID: '72ecc7d42e65a217c1b3b57ddb8e6453b7778f0d5df4018c4b9949c46a329a0c',
   }
 }

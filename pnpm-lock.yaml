@@ -44,9 +44,6 @@ importers:
       lint-staged:
         specifier: ^15.2.0
         version: 15.2.0
-      pnpm:
-        specifier: ^8.12.0
-        version: 8.12.0
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
@@ -3418,12 +3415,6 @@ packages:
   /pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
-    dev: true
-
-  /pnpm@8.12.0:
-    resolution: {integrity: sha512-J5J4+Dvngvb6rvusvMxQMwHE7Cza/UCYPnwmru7nw4Jw9cjmNbQ0ZGkbiXq+FnW0DAbfbtrd6SJTK3NoqppSZw==}
-    engines: {node: '>=16.14'}
-    hasBin: true
     dev: true
 
   /postcss-selector-parser@6.0.13:

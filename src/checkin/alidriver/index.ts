@@ -36,7 +36,11 @@ function getAccessTokenApi(refreshToken: string) {
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
   }
-  const result = http.post<GetAccessTokenResponse & RequestError>('https://auth.aliyundrive.com/v2/account/token', JSON.stringify(body)).json()
+  const result = http.fetch<GetAccessTokenResponse & RequestError>('https://auth.aliyundrive.com/v2/account/token', {
+    body: JSON.stringify(body),
+    method: 'POST',
+
+  }).json()
   if (result.access_token)
     http.updateAccessToken(result.access_token)
 
@@ -45,21 +49,20 @@ function getAccessTokenApi(refreshToken: string) {
 // 签到
 function signInListApi() {
   const body = { '_rx-s': 'mobile' }
-  const result = http.post<GetSignInListResponse>('https://member.aliyundrive.com/v1/activity/sign_in_list', JSON.stringify(body)).json()
+  const result = http.fetch<GetSignInListResponse>('https://member.aliyundrive.com/v1/activity/sign_in_list', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).json()
   return result
 }
 // 更新设备信息
-function updateDeviceExtras(deviceId: string) {
+function updateDeviceExtras() {
   const body = {
     autoBackupStatus: true,
   }
   const result = http.fetch<{ 'result': boolean, 'success': boolean, 'code': null, 'message'?: string }>('https://api.alipan.com/users/v1/users/update_device_extras', {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: {
-      'x-device-id': deviceId,
-      'Content-Type': 'application/json;charset=UTF-8',
-    },
 
   }).json()
   return result
@@ -67,19 +70,28 @@ function updateDeviceExtras(deviceId: string) {
 // 获取今日签到奖励
 function signInInfoApi() {
   const body = {}
-  const result = http.post<GetSignInInfoResponse>('https://member.aliyundrive.com/v2/activity/sign_in_info', JSON.stringify(body)).json()
+  const result = http.fetch<GetSignInInfoResponse>('https://member.aliyundrive.com/v2/activity/sign_in_info', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).json()
   return result
 }
 // 领取签到奖励
 function signInRewardApi(signInDay: number) {
   const body = { signInDay }
-  const result = http.post<GetSignInRewardResponse>('https://member.aliyundrive.com/v1/activity/sign_in_reward', JSON.stringify(body)).json()
+  const result = http.fetch<GetSignInRewardResponse>('https://member.aliyundrive.com/v1/activity/sign_in_reward', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).json()
   return result
 }
 // 领取签到任务奖励
 function signInTaskRewardApi(signInDay: number) {
   const body = { signInDay }
-  const result = http.post<GetSignInTaskRewardResponse>('https://member.aliyundrive.com/v2/activity/sign_in_task_reward', JSON.stringify(body)).json()
+  const result = http.fetch<GetSignInTaskRewardResponse>('https://member.aliyundrive.com/v2/activity/sign_in_task_reward', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  }).json()
   return result
 }
 
@@ -118,8 +130,9 @@ function signInTaskRewardApi(signInDay: number) {
       return
 
     // 更新设备信息
-    const updateDeviceExtrasResult = updateDeviceExtras(device_id)
-    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)}`)
+    const updateDeviceExtrasResult = updateDeviceExtras()
+    http.updateDeviceId(device_id)
+    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)},${device_id}`)
     sleep(2000)
 
     // 获取今日签到奖励
