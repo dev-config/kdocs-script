@@ -4,12 +4,14 @@ function Config() {
   const MAIL_USERNAME = "";
   const MAIL_PASSWORD = "";
   const MAIL_SECURE = "true" ;
+  const DEVICE_ID = "";
   return {
     MAIL_HOST,
     MAIL_PORT,
     MAIL_USERNAME,
     MAIL_PASSWORD,
-    MAIL_SECURE
+    MAIL_SECURE,
+    DEVICE_ID
   };
 }
 
@@ -48,23 +50,27 @@ function Email(options) {
 }
 
 function Http(accessToken) {
+  const { DEVICE_ID } = Config();
   let _accessToken = accessToken;
-  function post(url, data) {
-    return HTTP.post(url, data, { headers: { Authorization: `Bearer ${_accessToken}` } });
-  }
+  let _deviceId = DEVICE_ID;
   function fetch(url, data) {
     return HTTP.fetch(url, {
       ...data,
       headers: {
-        ...data.headers,
-        Authorization: `Bearer ${_accessToken}`
+        "Content-Type": "application/json;charset=UTF-8",
+        "Authorization": `Bearer ${_accessToken}`,
+        "x-device-id": _deviceId,
+        ...data.headers
       }
     });
   }
   function updateAccessToken(token) {
     _accessToken = token;
   }
-  return { post, fetch, updateAccessToken };
+  function updateDeviceId(deviceId) {
+    _deviceId = deviceId;
+  }
+  return { fetch, updateAccessToken, updateDeviceId };
 }
 
 const config = Config();
@@ -91,43 +97,44 @@ function getAccessTokenApi(refreshToken) {
     grant_type: "refresh_token",
     refresh_token: refreshToken
   };
-  const result = http.post("https://auth.aliyundrive.com/v2/account/token", JSON.stringify(body)).json();
+  const result = http.fetch("https://auth.aliyundrive.com/v2/account/token", {
+    body: JSON.stringify(body),
+    method: "POST"
+  }).json();
   if (result.access_token)
     http.updateAccessToken(result.access_token);
   return result;
 }
 function signInListApi() {
   const body = { "_rx-s": "mobile" };
-  const result = http.post("https://member.aliyundrive.com/v1/activity/sign_in_list", JSON.stringify(body)).json();
-  return result;
-}
-function updateDeviceExtras(deviceId) {
-  const body = {
-    autoBackupStatus: true
-  };
-  const result = http.fetch("https://api.alipan.com/users/v1/users/update_device_extras", {
+  const result = http.fetch("https://member.aliyundrive.com/v1/activity/sign_in_list", {
     method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "x-device-id": deviceId,
-      "Content-Type": "application/json;charset=UTF-8"
-    }
+    body: JSON.stringify(body)
   }).json();
   return result;
 }
 function signInInfoApi() {
   const body = {};
-  const result = http.post("https://member.aliyundrive.com/v2/activity/sign_in_info", JSON.stringify(body)).json();
+  const result = http.fetch("https://member.aliyundrive.com/v2/activity/sign_in_info", {
+    method: "POST",
+    body: JSON.stringify(body)
+  }).json();
   return result;
 }
 function signInRewardApi(signInDay) {
   const body = { signInDay };
-  const result = http.post("https://member.aliyundrive.com/v1/activity/sign_in_reward", JSON.stringify(body)).json();
+  const result = http.fetch("https://member.aliyundrive.com/v1/activity/sign_in_reward", {
+    method: "POST",
+    body: JSON.stringify(body)
+  }).json();
   return result;
 }
 function signInTaskRewardApi(signInDay) {
   const body = { signInDay };
-  const result = http.post("https://member.aliyundrive.com/v2/activity/sign_in_task_reward", JSON.stringify(body)).json();
+  const result = http.fetch("https://member.aliyundrive.com/v2/activity/sign_in_task_reward", {
+    method: "POST",
+    body: JSON.stringify(body)
+  }).json();
   return result;
 }
 (function() {
@@ -144,7 +151,7 @@ function signInTaskRewardApi(signInDay) {
   accountList.forEach((account, index) => {
     const { refreshToken, email, isReward, isNotify, startRow: startRow2 } = account;
     console.log(`开始签到第${index + 2}行账号`);
-    const { access_token, refresh_token, user_name, device_id } = getAccessTokenApi(refreshToken);
+    const { access_token, refresh_token, user_name } = getAccessTokenApi(refreshToken);
     Application.Range(`A${startRow2}`).Value = refresh_token;
     if (!access_token) {
       console.log(`第${index + 2}行账号token错误`);
@@ -166,11 +173,10 @@ function signInTaskRewardApi(signInDay) {
     }
     if (!isReward)
       return;
-    const updateDeviceExtrasResult = updateDeviceExtras(device_id);
-    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)}`);
     const signInInfoResult = signInInfoApi();
-    const signInRewardResult = signInRewardApi(signInInfoResult.result.signInDay);
-    const signInTaskRewardResult = signInTaskRewardApi(signInInfoResult.result.signInDay);
+    const signInDay = signInInfoResult.result.signInDay;
+    const signInRewardResult = signInRewardApi(signInDay);
+    const signInTaskRewardResult = signInTaskRewardApi(signInDay);
     if (isNotify) {
       if (signInRewardResult.success)
         emailHelper.add(email, `✅ 第${index + 2}行账号(${user_name})签到奖励成功=>${signInRewardResult.result.name},${signInRewardResult.result.description}
