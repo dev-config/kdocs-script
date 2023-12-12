@@ -10,6 +10,8 @@ export function Config() {
   const MAIL_PASSWORD = process.env.MAIL_PASSWORD as string || ''
   // 邮箱是否使用SSL
   const MAIL_SECURE = process.env.MAIL_SECURE as string || 'true'
+  // 阿里云盘 device id（）
+  const DEVICE_ID = process.env.DEVICE_ID as string || ''
 
   return {
     MAIL_HOST,
@@ -17,6 +19,6 @@ export function Config() {
     MAIL_USERNAME,
     MAIL_PASSWORD,
     MAIL_SECURE,
-    DEFAULT_DEVICE_ID: '72ecc7d42e65a217c1b3b57ddb8e6453b7778f0d5df4018c4b9949c46a329a0c',
+    DEVICE_ID,
   }
 }

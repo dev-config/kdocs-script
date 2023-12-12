@@ -110,7 +110,7 @@ function signInTaskRewardApi(signInDay: number) {
   accountList.forEach((account, index) => {
     const { refreshToken, email, isReward, isNotify, startRow } = account
     console.log(`开始签到第${index + 2}行账号`)
-    const { access_token, refresh_token, user_name, device_id } = getAccessTokenApi(refreshToken)
+    const { access_token, refresh_token, user_name } = getAccessTokenApi(refreshToken)
     Application.Range(`A${startRow}`).Value = refresh_token
     if (!access_token) {
       console.log(`第${index + 2}行账号token错误`)
@@ -129,18 +129,19 @@ function signInTaskRewardApi(signInDay: number) {
     if (!isReward)
       return
 
-    // 更新设备信息
-    const updateDeviceExtrasResult = updateDeviceExtras()
-    http.updateDeviceId(device_id)
-    console.log(`更新设备信息=>${JSON.stringify(updateDeviceExtrasResult)},${device_id}`)
-    sleep(2000)
+    if (config.DEVICE_ID) {
+      // 更新设备信息
+      updateDeviceExtras()
+      sleep(2000)
+    }
 
     // 获取今日签到奖励
     const signInInfoResult = signInInfoApi()
+    const signInDay = signInInfoResult.result.signInDay
     // 领取签到奖励
-    const signInRewardResult = signInRewardApi(signInInfoResult.result.signInDay)
+    const signInRewardResult = signInRewardApi(signInDay)
     // 领取签到任务奖励
-    const signInTaskRewardResult = signInTaskRewardApi(signInInfoResult.result.signInDay)
+    const signInTaskRewardResult = signInTaskRewardApi(signInDay)
 
     if (isNotify) {
       if (signInRewardResult.success)

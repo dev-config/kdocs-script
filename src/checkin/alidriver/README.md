@@ -51,4 +51,5 @@ copy(JSON.parse(localStorage.token).refresh_token); console.log(JSON.parse(local
 
 ## 其他说明
 
-- 领取任务奖励暂时只是领取，并不能完成任务。
+- ~~领取任务奖励暂时只是领取，并不能完成任务。~~
+- 领取任务奖励需填入DEFAULT_DEVICE_ID，最好填入的是曾经完成过任务的设备的ID。网页端的设备ID请自行测试是否可以完成任务
